@@ -28,9 +28,9 @@ jobs:
           java-version: 17
           distribution: 'temurin'
           cache: maven
-#      - name: Build with Maven
-#        run: |
-#          mvn -B package --file pom.xml
+      - name: Build with Maven
+        run: |
+          mvn -B package --file pom.xml
       # using maven to run spring boot application
       - name: Run health check
         env:
