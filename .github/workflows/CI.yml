@@ -46,3 +46,14 @@ jobs:
             echo "Health check failed with HTTP status code $response"
             exit 1
           fi
+
+      - name: zip
+        run:
+          zip -r webapp.zip ../webapp
+
+      - name: packer validation
+        run: |
+          packer fmt
+          packer validate
+
+

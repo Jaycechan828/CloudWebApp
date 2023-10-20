@@ -47,6 +47,14 @@ public class MainController {
             }
         }
 
+//         @GetMapping("/v1/assignments/{id}")
+//     public  ResponseEntity<Assignment> getAssignmentsDetails(@PathVariable String id){
+//         String uid = id;
+
+//         return ResponseEntity.ok(assignmentService.getAssignmentDetails(id));
+//     }
+
+
 
 //    @GetMapping("/v1/assignments/{id}")
 //    public  ResponseEntity<Assignment> getAssignmentsDetails(@PathVariable String id){
@@ -59,6 +67,7 @@ public class MainController {
 
         return assignmentService.getAssignmentDetails(id);
 }
+
 
     @DeleteMapping("/v1/assignments/{id}")
     public ResponseEntity<HttpResponse> deleteAssignments(@PathVariable String id, Principal principal){
