@@ -41,10 +41,10 @@ source "amazon-ebs" "my-ami" {
   region          = "us-west-2"
   ami_name        = "csye6225_${formatdate("YYYY_MM_DD_hh_mm_ss", timestamp())}"
   ami_description = "AMI for CSYE 6225"
-#  ami_regions = [
-#
-#    "us-east-1",
-#  ]
+  #  ami_regions = [
+  #
+  #    "us-east-1",
+  #  ]
 
   aws_polling {
     delay_seconds = 120
@@ -69,25 +69,11 @@ build {
   sources = ["source.amazon-ebs.my-ami"]
 
   provisioner "file" {
-    source = "../../webapp"
+    source      = "target/csye6225-assignment-0.0.1-SNAPSHOT.jar"
     destination = "/home/admin/webapp"
   }
 
-
-#  provisioner "shell" {
-#    environment_vars = [
-#      "DEBIAN_FRONTEND=noninteractive",
-#      "CHECKPOINT_DISABLE=1",
-#    ]
-#    #    inline = [
-#    #      "sudo apt-get update",
-#    #      "sudo apt-get upgrade -y",
-#    #      "sudo apt-get install nginx -y", # nginx was for demo only. you do not need to install in your AMI.
-#    #      "sudo apt-get clean",
-#    #    ]
-#  }
-
   provisioner "shell" {
-    script = "./service.sh"
+    script = "./packer/service.sh"
   }
 }

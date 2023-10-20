@@ -53,7 +53,7 @@ jobs:
 
       - name: packer validation
         run: |
-          packer fmt
-          packer validate
+          packer fmt ./packer/aws-debian.pkr.hcl
+          packer validate ./packer/aws-debian.pkr.hcl
 
 
