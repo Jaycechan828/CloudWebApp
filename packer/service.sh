@@ -1,3 +1,4 @@
+
 sudo apt-get update
 
 #cd ..
@@ -23,6 +24,9 @@ sudo mariadb -uroot -e "ALTER USER 'root'@'localhost' IDENTIFIED BY 'Qq182845301
 
 
 mariadb -uroot -pQq18284530122 -e "CREATE DATABASE IF NOT EXISTS demo"
+
+
+sudo mvn -B package --file webapp/pom.xml
 
 #cd /root/webapp
 #
