@@ -97,10 +97,13 @@ build {
       "sudo apt-get upgrade -y",
       "sudo apt-get install -y openjdk-17-jdk",
 
-      "echo mariadb-server mysql-server/root_password password Qq18284530122 | sudo debconf-set-selections",
-      "echo mariadb-server mysql-server/root_password_again password Qq18284530122 | sudo debconf-set-selections",
-
       "sudo apt-get install -y mariadb-server mariadb-client",
+
+      "sudo mariadb -uroot -e ALTER USER 'root'@'localhost' IDENTIFIED BY 'Qq18284530122';",
+
+      "mariadb -uroot -pQq18284530122 -e CREATE DATABASE IF NOT EXISTS demo",
+
+
     ]
 
 }
