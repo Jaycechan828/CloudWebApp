@@ -101,7 +101,9 @@ build {
 
       "sudo mariadb -uroot -e ALTER USER 'root'@'localhost' IDENTIFIED BY 'Qq18284530122';",
 
-      "mariadb -uroot -pQq18284530122 -e CREATE DATABASE IF NOT EXISTS demo",
+
+      "sudo mariadb -uroot -pQq18284530122 -e CREATE DATABASE IF NOT EXISTS demo",
+
 
 
     ]
