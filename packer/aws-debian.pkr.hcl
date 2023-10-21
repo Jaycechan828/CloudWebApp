@@ -69,11 +69,39 @@ build {
   sources = ["source.amazon-ebs.my-ami"]
 
   provisioner "file" {
-    source      = "target/csye6225-assignment-0.0.1-SNAPSHOT.jar"
-    destination = "/home/admin/webapp.jar"
+    source      = "/home/runner/work/webapp/webapp/target/csye6225-0.0.1-SNAPSHOT.jar"
+    destination = "/tmp/webapp.jar"
+  }
+
+  provisioner "file" {
+    source      = "/home/runner/work/webapp/webapp/src/main/resources/users.csv"
+    destination = "/tmp/users.csv"
   }
 
   provisioner "shell" {
-    script = "./packer/service.sh"
+    inline = [
+      "sudo mv /tmp/webapp.jar /root/webapp.jar",
+      "sudo chown root:root /root/webapp.jar",
+
+      "sudo mv /tmp/users.csv /opt/users.csv",
+    ]
   }
+
+  provisioner "shell" {
+    environment_vars = [
+      "DEBIAN_FRONTEND=noninteractive",
+      "CHECKPOINT_DISABLE=1"
+    ]
+    inline = [
+      "sudo apt-get update",
+      "sudo apt-get upgrade -y",
+      "sudo apt-get install -y openjdk-17-jdk",
+
+      "echo mariadb-server mysql-server/root_password password Qq18284530122 | sudo debconf-set-selections",
+      "echo mariadb-server mysql-server/root_password_again password Qq18284530122 | sudo debconf-set-selections",
+
+      "sudo apt-get install -y mariadb-server mariadb-client",
+    ]
+
+}
 }
