@@ -69,7 +69,7 @@ build {
   sources = ["source.amazon-ebs.my-ami"]
 
   provisioner "file" {
-    source      = "/home/runner/work/webapp/webapp/target/csye6225-0.0.1-SNAPSHOT.jar"
+    source      = "/home/runner/work/webapp/webapp/target/csye6225-assignment-0.0.1-SNAPSHOT.jar"
     destination = "/tmp/webapp.jar"
   }
 
