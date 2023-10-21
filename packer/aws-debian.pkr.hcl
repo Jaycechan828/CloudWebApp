@@ -7,11 +7,11 @@ variable "foo" {
 
 variable "aws_access_key" {
   type    = string
-  default = "AKIA2KC2JXHAK5663VU2"
+  default = "AKIA2KC2JXHAMDHWTLQC"
 }
 variable "aws_secret_key" {
   type    = string
-  default = "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"
+  default = "daAbaT1gRAWoQne3vYfPdj7zH6+hzNRPkMKJGV2f"
 }
 
 variable "aws_region" {
@@ -21,7 +21,7 @@ variable "aws_region" {
 
 variable "source_ami" {
   type    = string
-  default = "ami-0b6edd8449255b799" # Ubuntu 22.04 LTS
+  default = "ami-0b6edd8449255b799" # debian 22.04 LTS
 }
 
 variable "ssh_username" {

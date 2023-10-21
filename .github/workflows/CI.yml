@@ -51,9 +51,23 @@ jobs:
 #        run:
 #          zip -r webapp.zip ../webapp
 
-      - name: packer validation
+      - name: Packer Validation
         run: |
           packer fmt ./packer/aws-debian.pkr.hcl
           packer validate ./packer/aws-debian.pkr.hcl
+          
+
+      - name: Packer Build
+        run: packer build ./packer/aws-debian.pkr.hcl
+        env:
+          AWS_ACCESS_KEY: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_KEY: ${{ secrets.AWS_SECRET_KEY }}
+          AWS_REGION: ${{ variables.AWS_REGION }}
+          SOURCE_AMI: ${{ variables.SOURCE_AMI }}
+          SSH_USERNAME: ${{ variables.SSH_USERNAME }}
+          SUBNET_ID: ${{ variables.SUBNET_ID }}
+          
+          
+          
 
 
