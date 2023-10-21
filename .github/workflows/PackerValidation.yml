@@ -10,6 +10,10 @@ on:
 jobs:
   checkPackerFile:
     runs-on: ubuntu-latest
+    env:
+      DB_DATABASE: demo
+      DB_USER: root
+      DB_PASSWORD: Qq18284530122
 
     steps:
       - uses: actions/checkout@v3
