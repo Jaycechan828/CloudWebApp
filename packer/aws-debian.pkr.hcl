@@ -70,7 +70,7 @@ build {
 
   provisioner "file" {
     source      = "target/csye6225-assignment-0.0.1-SNAPSHOT.jar"
-    destination = "/home/admin/webapp"
+    destination = "/home/admin/webapp.jar"
   }
 
   provisioner "shell" {

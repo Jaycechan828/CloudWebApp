@@ -1,0 +1,27 @@
+
+
+
+name: Packer Validation
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  checkPackerFile:
+    runs-on: ubuntu-latest
+
+    steps:
+
+
+      - name: Packer Validation
+        run: |
+          packer fmt ./packer/aws-debian.pkr.hcl
+          packer validate ./packer/aws-debian.pkr.hcl
+
+
+                
+
+
