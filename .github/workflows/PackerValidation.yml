@@ -1,6 +1,4 @@
 
-
-
 name: Packer Validation
 
 on:
@@ -14,8 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
-
+      - uses: actions/checkout@v3
       - name: Packer Validation
         run: |
           packer fmt ./packer/aws-debian.pkr.hcl
