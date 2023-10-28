@@ -1,0 +1,16 @@
+[Unit]
+Description = Webapp
+After = network.target
+
+[Service]
+WorkingDirectory=/opt/csye6225
+User=csye6225
+ExecStart=java -jar /opt/csye6225/webapp.jar --spring.config.location=file:/opt/csye6225/application.properties
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=csye6225
+
+[Install]
+WantedBy=multi-user.target
