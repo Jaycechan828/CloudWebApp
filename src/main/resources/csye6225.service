@@ -8,8 +8,8 @@ User=csye6225
 ExecStart=java -jar /opt/csye6225/webapp.jar --spring.config.location=file:/opt/csye6225/application.properties >> /var/log/csye6225.log 2>&1
 Restart=always
 RestartSec=10
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=inherit
+StandardError=inherit
 SyslogIdentifier=csye6225
 
 [Install]
