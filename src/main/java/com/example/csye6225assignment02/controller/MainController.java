@@ -5,6 +5,8 @@ import com.example.csye6225assignment02.entity.User;
 import com.example.csye6225assignment02.repository.AssignmentRepository;
 import com.example.csye6225assignment02.repository.UserRepository;
 import com.example.csye6225assignment02.service.AssignmentService;
+import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.StatsDClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,9 @@ import java.util.Optional;
 @RestController
 public class MainController {
 
+    private static final StatsDClient statsd = new NonBlockingStatsDClient("my.prefix", "localhost", 8125);
+
+
     @Autowired
     private AssignmentService assignmentService;
 
@@ -29,11 +34,20 @@ public class MainController {
     @GetMapping("/v1/assignments")
     public ResponseEntity<List<Assignment>> getAssignments(){
 
-        return ResponseEntity.ok(assignmentService.getAllAssignment());
+        long startTime = System.currentTimeMillis();
+
+        ResponseEntity<List<Assignment>> response = ResponseEntity.ok(assignmentService.getAllAssignment());
+
+        long duration = System.currentTimeMillis() - startTime;
+        statsd.recordExecutionTime("assignments.get.duration", duration);
+        statsd.incrementCounter("assignments.get.count");
+
+        return response;
     }
 
     @PostMapping("/v1/assignments")
     public ResponseEntity<Assignment> createAssignment(@RequestBody Assignment assignment, Principal principal) {
+        long startTime = System.currentTimeMillis();
 
 //        Optional<User> user = userRepository.findByEmail(principal.getName());
         User user = userRepository.findByEmail(principal.getName())
@@ -41,6 +55,10 @@ public class MainController {
 
             Assignment savedAssignment = assignmentService.addAssignment(assignment, user);
             if (savedAssignment != null) {
+
+                long duration = System.currentTimeMillis() - startTime;
+                statsd.recordExecutionTime("assignments.create.duration", duration);
+                statsd.incrementCounter("assignments.create.count");
                 return new ResponseEntity<>(savedAssignment, HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -50,12 +68,18 @@ public class MainController {
     @GetMapping("/v1/assignments/{id}")
     public  Assignment getAssignmentsDetails(@PathVariable String id){
 
+        long startTime = System.currentTimeMillis();
+        long duration = System.currentTimeMillis() - startTime;
+        statsd.recordExecutionTime("assignments.get.duration", duration);
+        statsd.incrementCounter("assignments.get.count");
         return assignmentService.getAssignmentDetails(id);
 }
 
 
     @DeleteMapping("/v1/assignments/{id}")
     public ResponseEntity<HttpResponse> deleteAssignments(@PathVariable String id, Principal principal){
+        long startTime = System.currentTimeMillis();
+
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         Assignment assignmentDetails = assignmentService.getAssignmentDetails(id);
@@ -67,6 +91,10 @@ public class MainController {
         }
 
         assignmentService.deleteAssignment(id);
+
+        long duration = System.currentTimeMillis() - startTime;
+        statsd.recordExecutionTime("assignments.delete.duration", duration);
+        statsd.incrementCounter("assignments.delete.count");
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -74,6 +102,9 @@ public class MainController {
     public ResponseEntity<HttpResponse> updateAssignment(@PathVariable String id,
                                                          Principal principal,
                                                          @RequestBody Assignment assignment){
+
+        long startTime = System.currentTimeMillis();
+
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -85,6 +116,9 @@ public class MainController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN);
         }
         assignmentService.updateAssignment(assignment, id);
+        long duration = System.currentTimeMillis() - startTime;
+        statsd.recordExecutionTime("assignments.update.duration", duration);
+        statsd.incrementCounter("assignments.update.count");
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
