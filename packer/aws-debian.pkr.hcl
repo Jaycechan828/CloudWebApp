@@ -113,7 +113,8 @@ build {
 
 
       "sudo apt-get install -y openjdk-17-jdk",
-      "sudo yum install amazon-cloudwatch-agent"
+      "wget https://amazoncloudwatch-agent.s3.amazonaws.com/debian/amd64/latest/amazon-cloudwatch-agent.deb",
+      "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb"
 
     ]
   }
