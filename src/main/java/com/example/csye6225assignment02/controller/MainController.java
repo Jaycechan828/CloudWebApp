@@ -8,6 +8,7 @@ import com.example.csye6225assignment02.service.AssignmentService;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,8 +20,10 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
+
 @RestController
 public class MainController {
+
 
     private static final StatsDClient statsd = new NonBlockingStatsDClient("my.prefix", "localhost", 8125);
 
@@ -42,6 +45,7 @@ public class MainController {
         statsd.recordExecutionTime("assignments.get.duration", duration);
         statsd.incrementCounter("assignments.get.count");
 
+
         return response;
     }
 
@@ -59,6 +63,7 @@ public class MainController {
                 long duration = System.currentTimeMillis() - startTime;
                 statsd.recordExecutionTime("assignments.create.duration", duration);
                 statsd.incrementCounter("assignments.create.count");
+
                 return new ResponseEntity<>(savedAssignment, HttpStatus.CREATED);
             } else {
                 return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -72,6 +77,7 @@ public class MainController {
         long duration = System.currentTimeMillis() - startTime;
         statsd.recordExecutionTime("assignments.get.duration", duration);
         statsd.incrementCounter("assignments.get.count");
+
         return assignmentService.getAssignmentDetails(id);
 }
 
@@ -95,6 +101,7 @@ public class MainController {
         long duration = System.currentTimeMillis() - startTime;
         statsd.recordExecutionTime("assignments.delete.duration", duration);
         statsd.incrementCounter("assignments.delete.count");
+
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
@@ -119,6 +126,7 @@ public class MainController {
         long duration = System.currentTimeMillis() - startTime;
         statsd.recordExecutionTime("assignments.update.duration", duration);
         statsd.incrementCounter("assignments.update.count");
+
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
