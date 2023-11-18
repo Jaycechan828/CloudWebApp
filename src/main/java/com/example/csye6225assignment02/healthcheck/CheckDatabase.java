@@ -31,6 +31,8 @@ public class CheckDatabase {
             if ( connection.isValid(1)){
                 isConnected = true;
             }
+            connection.close();
+
         } catch (SQLException e) {
             isConnected = false;
         }
