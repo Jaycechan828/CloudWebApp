@@ -1,10 +1,14 @@
 package com.example.csye6225assignment02.controller;
 
 import com.example.csye6225assignment02.entity.Assignment;
+import com.example.csye6225assignment02.entity.Submission;
 import com.example.csye6225assignment02.entity.User;
 import com.example.csye6225assignment02.repository.AssignmentRepository;
+import com.example.csye6225assignment02.repository.SubmissionRepository;
 import com.example.csye6225assignment02.repository.UserRepository;
 import com.example.csye6225assignment02.service.AssignmentService;
+import com.example.csye6225assignment02.service.SnsService;
+import com.example.csye6225assignment02.service.SubmissionService;
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +37,14 @@ public class MainController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private SubmissionService submissionService;
+
+    @Autowired
+    private SnsService snsService;
+
+
 
     @GetMapping("/v1/assignments")
     public ResponseEntity<List<Assignment>> getAssignments(){
@@ -129,5 +141,31 @@ public class MainController {
 
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
+
+    @RequestMapping(value = "/v1/assignments/{id}/submission", method = RequestMethod.POST)
+    public ResponseEntity<HttpResponse> submitAssignment(@PathVariable String id,
+                                                         Principal principal,
+                                                         @RequestBody Submission submission){
+        User user = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+        Assignment assignment = assignmentService.getAssignmentDetails(id);
+
+        if ( assignment != null){
+            if (submissionService.addSubmission(submission, user, assignment)){
+
+//                String message = "Submission URL: " + submission.getSubmission_url() +
+//                        ", User Email: " + user.getEmail();
+
+                snsService.publishToTopic(submission.getSubmission_url(), user.getEmail());
+
+                return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            }else{
+                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+            }
+        }else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+    }
+
 
 }

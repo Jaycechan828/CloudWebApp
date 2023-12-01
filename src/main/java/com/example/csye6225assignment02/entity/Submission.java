@@ -13,50 +13,38 @@ import org.hibernate.annotations.OnDeleteAction;
 import org.hibernate.annotations.UpdateTimestamp;
 
 @Entity
-@Table(name = "assignment")
+@Table(name = "submission")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Assignment {
+public class Submission {
 
     @Id
     @GeneratedValue( strategy = GenerationType.UUID)
     @JsonProperty("id")
     private String id;
 
-    @JsonProperty("name")
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "assignment_id")
+    private Assignment assignment;
 
-    @JsonProperty("points")
-    private Integer points;
+    @JsonProperty("submission_url")
+    private String submission_url;
 
-    @JsonProperty("num_of_attemps")
-    private Integer num_of_attemps;
-
-    @JsonProperty("deadline")
-    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-//    @CreationTimestamp
-    @Column(name = "deadline", updatable = false, nullable = false)
-    private String deadline;
-
-    @JsonProperty("assignment_created")
+    @JsonProperty("submission_date")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     @CreationTimestamp
-    @Column(name = "assignment_created", updatable = false, nullable = false)
-    private String assignment_created;
+    private String submission_date;
 
-    @JsonProperty("assignment_updated")
+    @JsonProperty("submission_updated")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
-    @Column(name = "assignment_updated", nullable = false)
     @UpdateTimestamp
-    private String assignment_updated;
+    private String submission_updated;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
     private User user;
-
-
 
 }
