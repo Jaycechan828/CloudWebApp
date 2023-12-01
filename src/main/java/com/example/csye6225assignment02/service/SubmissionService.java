@@ -40,18 +40,31 @@ public class SubmissionService {
         }
 
         int attempts = assignment.getNum_of_attemps();
-        if (foundSubmissions != null && attempts > 0 ){
 
-            Submission latestSubmission = foundSubmissions.get(foundSubmissions.size()-1);
-            latestSubmission.setSubmission_updated(LocalDateTime.now().toString());
-            latestSubmission.setSubmission_url(submission.getSubmission_url());
-            submissionRepository.save(latestSubmission);
-            assignment.setNum_of_attemps(attempts - 1);
+        // 如果没有提交
+        if (foundSubmissions.isEmpty()){
+            submissionRepository.save(submission);
+            assignment.setNum_of_attemps(attempts-1);
             assignmentRepository.save(assignment);
             return true;
-        }else {
-            return false;
+        }else{
+            // 如果有提交，那么检查剩余提交次数
+            if ( attempts > 0 ){
+
+                Submission latestSubmission = foundSubmissions.get(foundSubmissions.size()-1);
+                latestSubmission.setSubmission_updated(LocalDateTime.now().toString());
+                latestSubmission.setSubmission_url(submission.getSubmission_url());
+                submissionRepository.save(latestSubmission);
+                assignment.setNum_of_attemps(attempts - 1);
+                assignmentRepository.save(assignment);
+                return true;
+            }
+            //如果没有，就拒绝
+            else {
+                return false;
+            }
         }
+
     }
 
 }
