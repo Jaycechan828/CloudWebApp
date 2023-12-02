@@ -43,6 +43,7 @@ public class SubmissionService {
 
         // 如果没有提交
         if (foundSubmissions.isEmpty()){
+            submission.setUser(user);
             submissionRepository.save(submission);
             assignment.setNum_of_attemps(attempts-1);
             assignmentRepository.save(assignment);
