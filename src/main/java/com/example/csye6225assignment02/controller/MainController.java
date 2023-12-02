@@ -149,7 +149,7 @@ public class MainController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PostMapping("/{id}/submission")
+    @RequestMapping(value = "/v1/assignments/{id}/submission", method = RequestMethod.POST)
     public Response<Submission> createSubmission(@PathVariable String id,
 
                                                  @RequestBody SubmissionDTO submissionDTO,
