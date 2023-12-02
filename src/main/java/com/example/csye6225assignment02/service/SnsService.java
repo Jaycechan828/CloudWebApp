@@ -13,13 +13,16 @@ import com.amazonaws.services.sns.model.PublishRequest;
 @Service
 public class SnsService {
 
-    public void publishToTopic(String submissionUrl, String userEmail) {
+    public void publishToSns(String submissionUrl, String userEmail) {
+        // create a new SNS client and set endpoint
         AmazonSNS snsClient = AmazonSNSClientBuilder.standard()
                 .withRegion(Regions.US_WEST_2)
                 .build();
 
+        // get the topic arn
         String topicArn = snsClient.listTopics().getTopics().get(0).getTopicArn();
 
+        // publish to the topic
         JsonObject messageJson = new JsonObject();
         messageJson.addProperty("submissionUrl", submissionUrl);
         messageJson.addProperty("userEmail", userEmail);
@@ -27,6 +30,7 @@ public class SnsService {
         PublishRequest publishRequest = new PublishRequest(topicArn, messageJson.toString());
 
         snsClient.publish(publishRequest);
+
     }
 }
 

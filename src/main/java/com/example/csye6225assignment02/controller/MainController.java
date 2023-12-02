@@ -2,10 +2,12 @@ package com.example.csye6225assignment02.controller;
 
 import com.example.csye6225assignment02.entity.Assignment;
 import com.example.csye6225assignment02.entity.Submission;
+import com.example.csye6225assignment02.entity.SubmissionDTO;
 import com.example.csye6225assignment02.entity.User;
 import com.example.csye6225assignment02.repository.AssignmentRepository;
 import com.example.csye6225assignment02.repository.SubmissionRepository;
 import com.example.csye6225assignment02.repository.UserRepository;
+import com.example.csye6225assignment02.response.Response;
 import com.example.csye6225assignment02.service.AssignmentService;
 import com.example.csye6225assignment02.service.SnsService;
 import com.example.csye6225assignment02.service.SubmissionService;
@@ -21,6 +23,8 @@ import org.springframework.web.server.ResponseStatusException;
 import javax.swing.text.html.Option;
 import java.net.http.HttpResponse;
 import java.security.Principal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,14 +44,17 @@ public class MainController {
 
     @Autowired
     private SubmissionService submissionService;
+    @Autowired
+    private SubmissionRepository submissionRepository;
+    @Autowired
+    private AssignmentRepository assignmentRepository;
 
     @Autowired
     private SnsService snsService;
 
 
-
     @GetMapping("/v1/assignments")
-    public ResponseEntity<List<Assignment>> getAssignments(){
+    public ResponseEntity<List<Assignment>> getAssignments() {
 
         long startTime = System.currentTimeMillis();
 
@@ -69,21 +76,21 @@ public class MainController {
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
-            Assignment savedAssignment = assignmentService.addAssignment(assignment, user);
-            if (savedAssignment != null) {
+        Assignment savedAssignment = assignmentService.addAssignment(assignment, user);
+        if (savedAssignment != null) {
 
-                long duration = System.currentTimeMillis() - startTime;
-                statsd.recordExecutionTime("assignments.create.duration", duration);
-                statsd.incrementCounter("assignments.create.count");
+            long duration = System.currentTimeMillis() - startTime;
+            statsd.recordExecutionTime("assignments.create.duration", duration);
+            statsd.incrementCounter("assignments.create.count");
 
-                return new ResponseEntity<>(savedAssignment, HttpStatus.CREATED);
-            } else {
-                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-            }
+            return new ResponseEntity<>(savedAssignment, HttpStatus.CREATED);
+        } else {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
+    }
 
     @GetMapping("/v1/assignments/{id}")
-    public  Assignment getAssignmentsDetails(@PathVariable String id){
+    public Assignment getAssignmentsDetails(@PathVariable String id) {
 
         long startTime = System.currentTimeMillis();
         long duration = System.currentTimeMillis() - startTime;
@@ -91,17 +98,17 @@ public class MainController {
         statsd.incrementCounter("assignments.get.count");
 
         return assignmentService.getAssignmentDetails(id);
-}
+    }
 
 
     @DeleteMapping("/v1/assignments/{id}")
-    public ResponseEntity<HttpResponse> deleteAssignments(@PathVariable String id, Principal principal){
+    public ResponseEntity<HttpResponse> deleteAssignments(@PathVariable String id, Principal principal) {
         long startTime = System.currentTimeMillis();
 
         User user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         Assignment assignmentDetails = assignmentService.getAssignmentDetails(id);
-        if (assignmentDetails == null){
+        if (assignmentDetails == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
         }
         if (!user.getId().equals(assignmentDetails.getUser().getId())) {
@@ -120,7 +127,7 @@ public class MainController {
     @RequestMapping(value = "/v1/assignments/{id}", method = RequestMethod.PUT)
     public ResponseEntity<HttpResponse> updateAssignment(@PathVariable String id,
                                                          Principal principal,
-                                                         @RequestBody Assignment assignment){
+                                                         @RequestBody Assignment assignment) {
 
         long startTime = System.currentTimeMillis();
 
@@ -128,7 +135,7 @@ public class MainController {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
         Assignment assignmentDetails = assignmentService.getAssignmentDetails(id);
-        if (assignmentDetails == null){
+        if (assignmentDetails == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Assignment not found");
         }
         if (!user.getId().equals(assignmentDetails.getUser().getId())) {
@@ -142,30 +149,38 @@ public class MainController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "/v1/assignments/{id}/submission", method = RequestMethod.POST)
-    public ResponseEntity<HttpResponse> submitAssignment(@PathVariable String id,
-                                                         Principal principal,
-                                                         @RequestBody Submission submission){
-        User user = userRepository.findByEmail(principal.getName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        Assignment assignment = assignmentService.getAssignmentDetails(id);
+    @PostMapping("/{id}/submission")
+    public Response<Submission> createSubmission(@PathVariable String id,
 
-        if ( assignment != null){
-            if (submissionService.addSubmission(submission, user, assignment)){
+                                                 @RequestBody SubmissionDTO submissionDTO,
+                                                 Principal principal) {
+        Assignment assignment = assignmentRepository.findById(id).orElse(null);
 
-//                String message = "Submission URL: " + submission.getSubmission_url() +
-//                        ", User Email: " + user.getEmail();
-
-                snsService.publishToTopic(submission.getSubmission_url(), user.getEmail());
-
-                return new ResponseEntity<>(HttpStatus.ACCEPTED);
-            }else{
-                return new ResponseEntity<>(HttpStatus.FORBIDDEN);
-            }
-        }else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        if (assignment == null) {
+            return Response.notFound("Assignment not found");
         }
+
+        LocalDateTime deadline = LocalDateTime.parse(assignment.getDeadline(), DateTimeFormatter.ISO_DATE_TIME);
+        if (LocalDateTime.now().isAfter(deadline)) {
+            return Response.forbidden("The deadline has passed");
+        }
+
+        User submitEmail = userRepository.findByEmail(principal.getName())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        String email = submitEmail.getEmail();
+
+        int countSubmission = submissionRepository.countSubmissionsByIdAndEmail(id, email);
+        if (countSubmission >= assignment.getNum_of_attemps()) {
+            return Response.forbidden("You have exceeded the number of attempts");
+        }
+
+        Submission submission = submissionService.createSubmission(id, submissionDTO, assignment, submitEmail);
+
+        snsService.publishToSns(submissionDTO.getSubmission_url(), principal.getName());
+
+        return Response.success(submission);
+
+
     }
-
-
 }
