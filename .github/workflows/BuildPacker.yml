@@ -36,6 +36,14 @@ jobs:
         run: |
           mvn -B package --file pom.xml
 
+      - name: Packer Initialization
+        run: |
+          packer init packer/aws-debian.pkr.hcl
+
+      - name: Install jq
+        run: |
+          sudo apt-get install jq
+
       - name: Packer Build
         run: packer build ./packer/aws-debian.pkr.hcl
         env:
@@ -45,3 +53,46 @@ jobs:
           SOURCE_AMI: ${{ vars.SOURCE_AMI }}
           SSH_USERNAME: ${{ vars.SSH_USERNAME }}
           SUBNET_ID: ${{ vars.SUBNET_ID }}
+
+      - name: Configure AWS CLI
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_DEMO }} && \
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY_DEMO }} && \
+          aws configure set default.region us-west-2 && \
+          aws configure set default.output_format json
+        
+
+      - name: Create Launch Template Version
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_DEMO }} && \
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY_DEMO }} && \
+          aws configure set default.region us-west-2 && \
+          aws configure set default.output_format json
+          ami_id=$(cat output-ami-id.txt)
+          aws ec2 create-launch-template-version --launch-template-name ${{ vars.TEMPLATE_NAME }} --source-version '$Latest' --launch-template-data '{"ImageId": "'$ami_id'"}'
+
+      - name: Refresh Auto Scaling Group
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_DEMO }} && \
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY_DEMO }} && \
+          aws configure set default.region us-west-2 && \
+          aws configure set default.output_format json
+          aws autoscaling start-instance-refresh --auto-scaling-group-name ${{ vars.ASG_NAME }}
+
+      - name: Wait for Instance Refresh
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_DEMO }} && \
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_KEY_DEMO }} && \
+          aws configure set default.region us-west-2 && \
+          aws configure set default.output_format json
+          completed="false"
+          while [ "$completed" != "true" ]; do
+            status=$(aws autoscaling describe-instance-refreshes --auto-scaling-group-name ${{ vars.ASG_NAME }} --query 'InstanceRefreshes[0].Status' --output text)
+            if [ "$status" == "Successful" ]; then
+              completed="true"
+            elif [ "$status" == "Failed" ]; then
+              echo "Instance refresh failed"
+              exit 1
+            fi
+            sleep 45
+          done

@@ -53,7 +53,7 @@ public class MainController {
     private SnsService snsService;
 
 
-    @GetMapping("/v1/assignments")
+    @GetMapping("/v2/assignments")
     public ResponseEntity<List<Assignment>> getAssignments() {
 
         long startTime = System.currentTimeMillis();
@@ -68,7 +68,7 @@ public class MainController {
         return response;
     }
 
-    @PostMapping("/v1/assignments")
+    @PostMapping("/v2/assignments")
     public ResponseEntity<Assignment> createAssignment(@RequestBody Assignment assignment, Principal principal) {
         long startTime = System.currentTimeMillis();
 
@@ -89,7 +89,7 @@ public class MainController {
         }
     }
 
-    @GetMapping("/v1/assignments/{id}")
+    @GetMapping("/v2/assignments/{id}")
     public Assignment getAssignmentsDetails(@PathVariable String id) {
 
         long startTime = System.currentTimeMillis();
@@ -101,7 +101,7 @@ public class MainController {
     }
 
 
-    @DeleteMapping("/v1/assignments/{id}")
+    @DeleteMapping("/v2/assignments/{id}")
     public ResponseEntity<HttpResponse> deleteAssignments(@PathVariable String id, Principal principal) {
         long startTime = System.currentTimeMillis();
 
@@ -124,7 +124,7 @@ public class MainController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "/v1/assignments/{id}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/v2/assignments/{id}", method = RequestMethod.PUT)
     public ResponseEntity<HttpResponse> updateAssignment(@PathVariable String id,
                                                          Principal principal,
                                                          @RequestBody Assignment assignment) {
@@ -149,7 +149,7 @@ public class MainController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "/v1/assignments/{id}/submission", method = RequestMethod.POST)
+    @RequestMapping(value = "/v2/assignments/{id}/submission", method = RequestMethod.POST)
     public Response<Submission> createSubmission(@PathVariable String id,
 
                                                  @RequestBody SubmissionDTO submissionDTO,

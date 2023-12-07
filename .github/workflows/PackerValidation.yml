@@ -33,6 +33,14 @@ jobs:
         run: |
           mvn -B package --file pom.xml
 
+      - name: Install jq
+        run: |
+          sudo apt-get install jq
+
+      - name: Packer Initialization
+        run: |
+          packer init packer/aws-debian.pkr.hcl
+
       - name: Packer Validation
         run: |
           packer fmt packer/aws-debian.pkr.hcl

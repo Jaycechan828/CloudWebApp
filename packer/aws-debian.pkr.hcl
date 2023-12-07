@@ -1,4 +1,13 @@
 
+packer {
+  required_plugins {
+    amazon = {
+      source  = "github.com/hashicorp/amazon"
+      version = "~> 1"
+    }
+  }
+}
+
 #build.pkr.hcl
 variable "foo" {
   type    = string
@@ -7,11 +16,11 @@ variable "foo" {
 
 variable "aws_access_key" {
   type    = string
-  default = "AKIA2KC2JXHAMDHWTLQC"
+  default = "AKIA2KC2JXHAM7OCSSE2"
 }
 variable "aws_secret_key" {
   type    = string
-  default = "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"
+  default = "5jd3KiPRxIbdbYCU6+x7MDDI/Gmzs1sfICZhugHj"
 }
 
 variable "aws_region" {
@@ -117,5 +126,13 @@ build {
       "sudo dpkg -i -E ./amazon-cloudwatch-agent.deb"
 
     ]
+  }
+  post-processor "manifest" {
+    output = "manifest.json"
+    strip_path = true
+  }
+
+  post-processor "shell-local" {
+    inline = ["ami_id=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d':' -f2)", "echo $ami_id > output-ami-id.txt"]
   }
 }
